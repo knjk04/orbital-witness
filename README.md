@@ -6,3 +6,7 @@ Setup:
 - Move into `src` directory: `cd src`
 - Install dependencies: `pip install -r requirements.txt`
 - Run `process_schedule_of_notices_of_leases.py`
+
+Output:
+There are debugging lines printed to stdout to show the current progress.
+The final output file is output.json. However, due to time constraints with this exercise, this is only a partial solution.
