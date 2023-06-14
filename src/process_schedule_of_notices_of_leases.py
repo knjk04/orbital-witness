@@ -1,16 +1,7 @@
-import re
-
 import pandas as pd
 import tabula
 
-
-class ScheduleOfNoticesOfLeases:
-    def __init__(self, reg_date: str, property_desc: str, lease_date: str, lessee_title: str, note: str = None):
-        self.reg_date = reg_date
-        self.property_desc = property_desc
-        self.lease_date = lease_date
-        self.lessee_title = lessee_title
-        self.note = note
+from schedule_of_notices_of_leases import ScheduleOfNoticesOfLeases
 
 
 def value_present(s) -> bool:
@@ -18,7 +9,7 @@ def value_present(s) -> bool:
 
 
 print("\n******************\n")
-file = "Official_Copy_Register.pdf"
+file = "input/Official_Copy_Register.pdf"
 # Without specifying the header option as None, the first row will be treated as a header row
 df_list: list[pd.DataFrame] = tabula.read_pdf(file, pages="all", pandas_options={'header': None})
 print(df_list[2].to_string(index=False))
