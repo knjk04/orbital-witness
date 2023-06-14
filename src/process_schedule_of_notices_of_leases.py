@@ -1,10 +1,20 @@
 import logging
 import sys
+from enum import Enum
 
 import pandas as pd
 import tabula
 
 from schedule_of_notices_of_leases import ScheduleOfNoticesOfLeases
+
+
+# Using enum for the column names to avoid typos as they are used multiple times throughout
+class Column(Enum):
+    INDEX = "index"
+    REG_DATE = "reg_date"
+    PROPERTY_DESC = "property_desc"
+    LEASE_DATE = "lease_date"
+    LESSEE_TITLE = "lessee_title"
 
 
 def value_present(s) -> bool:
@@ -18,7 +28,7 @@ def read_pdf() -> list[pd.DataFrame]:
     file = "input/Official_Copy_Register.pdf"
     # Without specifying the header option as None, the first row will be treated as a header row
     df_list: list[pd.DataFrame] = tabula.read_pdf(file, pages="all", pandas_options={'header': None})
-    print(df_list[8].to_string(index=False))
+    print(df_list[9].to_string(index=False))
     return df_list
 
 
@@ -31,14 +41,15 @@ def process_pdf():
     for rows in df_list[2:]:
         logging.debug("Next set of rows:\n")
         print(rows)
-        rows.columns = ["index", "reg_date", "property_desc", "lease_date", "lessee_title"]
+        rows.columns = [Column.INDEX.value, Column.REG_DATE.value, Column.PROPERTY_DESC.value, Column.LEASE_DATE.value,
+                        Column.LESSEE_TITLE.value]
 
         default_val = float('-inf')
         index = default_val
         for i in range(len(rows)):
             row = rows.iloc[i]
 
-            if value_present(str(row.loc["index"])):
+            if value_present(str(row.loc[Column.INDEX.value])):
                 if index != default_val:
                     # Then index was updated, so this row represents a new entry
                     # This only needs to apply for the first time it is set to 1. On subsequent occasions, e.g. ...
@@ -49,17 +60,17 @@ def process_pdf():
                     ))
                 # TODO: stop accessing value from series multiple times
                 # start of a new row, so add
-                index = row.loc["index"]
-                reg_date = row.loc["reg_date"]
-                property_desc = row.loc["property_desc"]
-                lease_date = row.loc["lease_date"]
-                lessee_title = row.loc["lessee_title"]
+                index = row.loc[Column.INDEX.value]
+                reg_date = row.loc[Column.REG_DATE.value]
+                property_desc = row.loc[Column.PROPERTY_DESC.value]
+                lease_date = row.loc[Column.LEASE_DATE.value]
+                lessee_title = row.loc[Column.LESSEE_TITLE.value]
             else:
                 # continuation of row, so append
-                reg_date += " " + row.loc["reg_date"] if value_present(row.loc["reg_date"]) else ""
-                property_desc += " " + row.loc["property_desc"] if value_present(row.loc["property_desc"]) else ""
-                lease_date += " " + row.loc["lease_date"] if value_present(row.loc["lease_date"]) else ""
-                lessee_title += " " + row.loc["lessee_title"] if value_present(row.loc["lessee_title"]) else ""
+                reg_date += " " + row.loc[Column.REG_DATE.value] if value_present(row.loc[Column.REG_DATE.value]) else ""
+                property_desc += " " + row.loc[Column.PROPERTY_DESC.value] if value_present(row.loc[Column.PROPERTY_DESC.value]) else ""
+                lease_date += " " + row.loc[Column.LEASE_DATE.value] if value_present(row.loc[Column.LEASE_DATE.value]) else ""
+                lessee_title += " " + row.loc[Column.LESSEE_TITLE.value] if value_present(row.loc[Column.LESSEE_TITLE.value]) else ""
 
             logging.debug(f"Index: {index}")
             logging.debug(f"Reg date: {reg_date}")
