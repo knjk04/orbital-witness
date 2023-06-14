@@ -30,7 +30,6 @@ print("\n******************\n")
 
 notices_of_leases: [ScheduleOfNoticesOfLeases] = []
 # Start from 2 as this is where the schedule of notices is
-row_num = 1
 for rows in df_list[2:]:
     print("First set of rows:\n")
     print(rows)
@@ -64,11 +63,13 @@ for rows in df_list[2:]:
             lease_date += " " + row.loc["lease_date"] if value_present(row.loc["lease_date"]) else ""
             lessee_title += " " + row.loc["lessee_title"] if value_present(row.loc["lessee_title"]) else ""
 
-        print(f"Row {row_num} Index: ", index)
-        print(f"Row {row_num} Reg date: ", reg_date)
-        print(f"Row {row_num} Property desc: ", property_desc)
-        print(f"Row {row_num} Lease date: ", lease_date)
-        print(f"Row {row_num} Lessee title: ", lessee_title, "\n")
-        row_num += 1
+        print(f"Index: ", index)
+        print(f"Reg date: ", reg_date)
+        print(f"Property desc: ", property_desc)
+        print(f"Lease date: ", lease_date)
+        print(f"Lessee title: ", lessee_title, "\n")
 
         x = 5
+
+
+# TODO: take list of objects and output JSON
