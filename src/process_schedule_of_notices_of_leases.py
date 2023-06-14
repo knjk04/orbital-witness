@@ -41,7 +41,12 @@ def contains_note(s: str) -> bool:
     return s.startswith("NOTE:")
 
 
-def process_pdf():
+def get_notices_from_pdf() -> list[ScheduleOfNoticesOfLeases]:
+    """
+    Iterates over the schedule of notices of leases DataFrames and saves each entry into a list of
+    ScheduleOfNoticesOfLeases objects.
+    :return: the list of ScheduleOfNoticesOfLeases object
+    """
     df_list = read_pdf()
     print("\n******************\n")
 
@@ -54,6 +59,7 @@ def process_pdf():
         rows.columns = [Column.INDEX.value, Column.REG_DATE.value, Column.PROPERTY_DESC.value, Column.LEASE_DATE.value,
                         Column.LESSEE_TITLE.value]
 
+        # setting index to a default value so it is known when the first entry is encountered
         default_val = float('-inf')
         index = default_val
         for i in range(len(rows)):
@@ -69,7 +75,6 @@ def process_pdf():
                         index=index, reg_date=reg_date, property_desc=property_desc, lease_date=lease_date,
                         lessee_title=lessee_title
                     ))
-                # TODO: stop accessing value from series multiple times
                 # start of a new row, so add
                 index = row.loc[Column.INDEX.value]
                 reg_date = row.loc[Column.REG_DATE.value]
@@ -91,6 +96,7 @@ def process_pdf():
             logging.debug(f"Lessee title: {lessee_title}")
 
             x = 5  # TODO: remove
+        return notices_of_leases
 
 
 def write_notices_as_json(notices: list[ScheduleOfNoticesOfLeases]) -> None:
@@ -107,7 +113,7 @@ def write_notices_as_json(notices: list[ScheduleOfNoticesOfLeases]) -> None:
 
 def main():
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
-    process_pdf()
+    write_notices_as_json(get_notices_from_pdf())
 
 
 if __name__ == "__main__":
