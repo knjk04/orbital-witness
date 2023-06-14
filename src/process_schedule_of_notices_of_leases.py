@@ -1,21 +1,12 @@
 import json
 import logging
 import sys
-from enum import Enum
 
 import pandas as pd
 import tabula
 
 from schedule_of_notices_of_leases import ScheduleOfNoticesOfLeases
-
-
-# Using enum for the column names to avoid typos as they are used multiple times throughout
-class Column(Enum):
-    INDEX = "index"
-    REG_DATE = "reg_date"
-    PROPERTY_DESC = "property_desc"
-    LEASE_DATE = "lease_date"
-    LESSEE_TITLE = "lessee_title"
+from src.column import Column
 
 
 def value_present(s) -> bool:
@@ -27,18 +18,12 @@ def read_pdf() -> list[pd.DataFrame]:
     Reads a PDF and returns a list of Pandas Dataframes, which contain the schedule of notices of leases table
     :return: a list of Pandas Dataframes
     """
-    print("\n******************\n")
     # To make this more flexible, this can be passed in as an argument coming from the command line to make it easier
     # to switch files at runtime
     file = "input/Official_Copy_Register.pdf"
     # Without specifying the header option as None, the first row will be treated as a header row
     df_list: list[pd.DataFrame] = tabula.read_pdf(file, pages="all", pandas_options={'header': None})
-    print(df_list[9].to_string(index=False))
     return df_list
-
-
-def contains_note(s: str) -> bool:
-    return s.startswith("NOTE:")
 
 
 def get_notices_from_pdf() -> list[ScheduleOfNoticesOfLeases]:
@@ -48,18 +33,16 @@ def get_notices_from_pdf() -> list[ScheduleOfNoticesOfLeases]:
     :return: the list of ScheduleOfNoticesOfLeases object
     """
     df_list = read_pdf()
-    print("\n******************\n")
 
     notices_of_leases: [ScheduleOfNoticesOfLeases] = []
     # Start from 2 as this is where the schedule of notices is
     for rows in df_list[2:]:
-    # for rows in df_list[9:]:
         logging.debug("Next set of rows:\n")
         print(rows)
         rows.columns = [Column.INDEX.value, Column.REG_DATE.value, Column.PROPERTY_DESC.value, Column.LEASE_DATE.value,
                         Column.LESSEE_TITLE.value]
 
-        # setting index to a default value so it is known when the first entry is encountered
+        # setting index to a default value, so it is known when the first entry is encountered
         default_val = float('-inf')
         index = default_val
         for i in range(len(rows)):
@@ -80,6 +63,11 @@ def get_notices_from_pdf() -> list[ScheduleOfNoticesOfLeases]:
                 reg_date = row.loc[Column.REG_DATE.value]
                 property_desc = row.loc[Column.PROPERTY_DESC.value]
                 lease_date = row.loc[Column.LEASE_DATE.value]
+                # Due to time constraints, I was unable to fix a problem where Pandas incorrectly separated the fields
+                # into the wrong columns for the batch of rows containing a note
+                # This catches one of the problems and returns a partial solution
+                if str(lease_date) == "nan":
+                    return notices_of_leases
                 lessee_title = row.loc[Column.LESSEE_TITLE.value]
             else:
                 # continuation of row, so append
@@ -94,9 +82,7 @@ def get_notices_from_pdf() -> list[ScheduleOfNoticesOfLeases]:
             logging.debug(f"Property desc: {property_desc}")
             logging.debug(f"Lease date: {lease_date}")
             logging.debug(f"Lessee title: {lessee_title}")
-
-            x = 5  # TODO: remove
-        return notices_of_leases
+    return notices_of_leases
 
 
 def write_notices_as_json(notices: list[ScheduleOfNoticesOfLeases]) -> None:
