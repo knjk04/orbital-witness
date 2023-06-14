@@ -53,6 +53,7 @@ def get_notices_from_pdf() -> list[ScheduleOfNoticesOfLeases]:
                     # Then index was updated, so this row represents a new entry
                     # This only needs to apply for the first time it is set to 1. On subsequent occasions, e.g. ...
                     # index = 2.0, this will still work.
+
                     # Save the previous entry
                     notices_of_leases.append(ScheduleOfNoticesOfLeases(
                         index=index, reg_date=reg_date, property_desc=property_desc, lease_date=lease_date,
@@ -65,7 +66,7 @@ def get_notices_from_pdf() -> list[ScheduleOfNoticesOfLeases]:
                 lease_date = row.loc[Column.LEASE_DATE.value]
                 # Due to time constraints, I was unable to fix a problem where Pandas incorrectly separated the fields
                 # into the wrong columns for the batch of rows containing a note
-                # This catches one of the problems and returns a partial solution
+                # This catches the first problem and returns a partial solution
                 if str(lease_date) == "nan":
                     return notices_of_leases
                 lessee_title = row.loc[Column.LESSEE_TITLE.value]
