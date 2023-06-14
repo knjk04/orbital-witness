@@ -1,3 +1,4 @@
+import json
 import logging
 import sys
 from enum import Enum
@@ -32,6 +33,10 @@ def read_pdf() -> list[pd.DataFrame]:
     return df_list
 
 
+def contains_note(s: str) -> bool:
+    return s.startswith("NOTE:")
+
+
 def process_pdf():
     df_list = read_pdf()
     print("\n******************\n")
@@ -39,6 +44,7 @@ def process_pdf():
     notices_of_leases: [ScheduleOfNoticesOfLeases] = []
     # Start from 2 as this is where the schedule of notices is
     for rows in df_list[2:]:
+    # for rows in df_list[9:]:
         logging.debug("Next set of rows:\n")
         print(rows)
         rows.columns = [Column.INDEX.value, Column.REG_DATE.value, Column.PROPERTY_DESC.value, Column.LEASE_DATE.value,
@@ -78,12 +84,19 @@ def process_pdf():
             logging.debug(f"Lease date: {lease_date}")
             logging.debug(f"Lessee title: {lessee_title}")
 
-            x = 5
+            x = 5  # TODO: remove
 
 
-# TODO: take list of objects and output JSON
-def output_json():
-    raise NotImplementedError
+def write_notices_as_json(notices: list[ScheduleOfNoticesOfLeases]) -> None:
+    """
+    Takes a list of notices of leases, converts it into a JSON array of objects and writes this to a file
+    Note: if a 'note' field in the notices of leases object was set to None, this will still feature in the output file
+    but will be represented with a null value.
+    :param notices: a list of schedule of notices of leases objects
+    """
+    json_obj = json.dumps([notice.__dict__ for notice in notices], indent=4)
+    with open('output.json', 'w') as f:
+        f.write(json_obj)
 
 
 def main():
