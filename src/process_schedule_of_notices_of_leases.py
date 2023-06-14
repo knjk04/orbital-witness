@@ -23,6 +23,10 @@ def value_present(s) -> bool:
 
 
 def read_pdf() -> list[pd.DataFrame]:
+    """
+    Reads a PDF and returns a list of Pandas Dataframes, which contain the schedule of notices of leases table
+    :return: a list of Pandas Dataframes
+    """
     print("\n******************\n")
     # To make this more flexible, this can be passed in as an argument coming from the command line to make it easier
     # to switch files at runtime
@@ -62,7 +66,8 @@ def process_pdf():
                     # index = 2.0, this will still work.
                     # Save the previous entry
                     notices_of_leases.append(ScheduleOfNoticesOfLeases(
-                        reg_date=reg_date, property_desc=property_desc, lease_date=lease_date, lessee_title=lessee_title
+                        index=index, reg_date=reg_date, property_desc=property_desc, lease_date=lease_date,
+                        lessee_title=lessee_title
                     ))
                 # TODO: stop accessing value from series multiple times
                 # start of a new row, so add
@@ -73,6 +78,7 @@ def process_pdf():
                 lessee_title = row.loc[Column.LESSEE_TITLE.value]
             else:
                 # continuation of row, so append
+                # It is important not to add index here because we do not want to append 'nan' to it
                 reg_date += " " + row.loc[Column.REG_DATE.value] if value_present(row.loc[Column.REG_DATE.value]) else ""
                 property_desc += " " + row.loc[Column.PROPERTY_DESC.value] if value_present(row.loc[Column.PROPERTY_DESC.value]) else ""
                 lease_date += " " + row.loc[Column.LEASE_DATE.value] if value_present(row.loc[Column.LEASE_DATE.value]) else ""
